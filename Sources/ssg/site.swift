@@ -86,22 +86,10 @@ open class Site {
     public func contents(_ markdown: Markdown) -> Node<HTML.BodyContext> {
         return .div (
             .class("content \(markdown.metadata["type"] ?? "")"),
-/*            .unwrap(markdown.metadata["title"]) {
-                .div(
-                    .h1(
-                        .class("content_header post_header"),
-                        .text($0)
-                    )
-                )
-            },*/
             .forEach(contentsGenerator) {
                 .group($0(markdown))
             }
-/*            .div(
-                .class("content_body"),
-                .raw(markdown.html)
-            ),
-*/      )
+        )
     }
     
     /// output HTML file given a title, contents and path to save to
