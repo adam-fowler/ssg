@@ -133,7 +133,7 @@ open class Site {
     }
     
     public func outputXMLSitemap() throws {
-        try siteMap.output(rootFolder)
+        try siteMap.output(htmlFolder)
     }
     
     var address: String
