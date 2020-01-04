@@ -54,6 +54,18 @@ open class Site {
         try srcFolder.copy(to: htmlFolder)
     }
     
+    /// copy contents of folder to another folder
+    public func syncFolder(folderName: String, targetFolder: String) throws {
+        let srcFolder = try rootFolder.subfolder(at: folderName)
+        let targetFolder = try htmlFolder.createSubfolderIfNeeded(at: targetFolder)
+        for file in srcFolder.files.includingHidden {
+            if let targetFile = try? targetFolder.file(at: file.name) {
+                try targetFile.delete()
+            }
+            try file.copy(to: targetFolder)
+        }
+    }
+    
     /// copy contents of folder and minimize to another folder
     public func syncAndMinimizeFolder(folderName: String) throws {
         let srcFolder = try rootFolder.subfolder(at: folderName)
