@@ -46,6 +46,10 @@ open class Site {
         footerGenerator.append(cb)
     }
     
+    public func addFileProcess(for extension: String, process: @escaping (File, Folder) throws -> ()) {
+        fileProcesses[`extension`] = process
+    }
+    
     /// copy contents of folder to another folder
     public func syncFolder(folderName: String) throws {
         let srcFolder = try rootFolder.subfolder(at: folderName)
@@ -67,13 +71,43 @@ open class Site {
     }
     
     /// copy contents of folder and minimize to another folder
-    public func syncAndMinimizeFolder(folderName: String) throws {
-        let srcFolder = try rootFolder.subfolder(at: folderName)
-        let targetFolder = try htmlFolder.createSubfolderIfNeeded(at: folderName)
-        for file in srcFolder.files {
-            let contents = try file.readAsString(encodedAs: .utf8)
-            try targetFolder.createFile(at: file.name, contents: Data(contents.utf8))
+    public func syncAndProcessFolder(source: String, target: String? = nil, includeHidden: Bool = false) throws {
+        let target = target ?? source
+        let sourceFolder = try rootFolder.subfolder(at: source)
+        let targetFolder = try htmlFolder.createSubfolderIfNeeded(at: target)
+        try syncAndProcessFolder(sourceFolder: sourceFolder, targetFolder: targetFolder, includeHidden: includeHidden)
+    }
+
+    public func syncAndProcessFolder(sourceFolder: Folder, targetFolder: Folder, includeHidden: Bool = false) throws {
+        var files = sourceFolder.files
+        if includeHidden {
+            files = files.includingHidden
         }
+        for file in files {
+            if let targetFile = try? targetFolder.file(at: file.name) {
+                guard let targetDate = targetFile.modificationDate,
+                    let sourceDate = file.modificationDate,
+                    targetDate < sourceDate else { continue }
+                try targetFile.delete()
+            }
+            print("Sync \(file.name)")
+            try copyAndProcessFile(file: file, destination: targetFolder)
+        }
+        
+        for folder in sourceFolder.subfolders {
+            let targetSubFolder = try targetFolder.createSubfolderIfNeeded(at: folder.name)
+            try syncAndProcessFolder(sourceFolder: folder, targetFolder: targetSubFolder, includeHidden: includeHidden)
+        }
+    }
+    
+    public func copyAndProcessFile(file: File, destination: Folder) throws {
+        for (ext, process) in fileProcesses {
+            if file.extension == ext {
+                try process(file, destination)
+                return
+            }
+        }
+        try file.copy(to: destination)
     }
     
     /// output HTML files for all the website posts
@@ -146,5 +180,6 @@ open class Site {
     var headerGenerator: [(Metadata)->Node<HTML.BodyContext>] = []
     var contentsGenerator: [(Markdown)->Node<HTML.BodyContext>] = []
     var footerGenerator: [(Metadata)->Node<HTML.BodyContext>] = []
+    var fileProcesses: [String: (File, Folder) throws -> ()] = [:]
 }
 
