@@ -40,7 +40,8 @@ public class Content {
         self.posts = try loadMarkdown(from: postsFolder, includeSubFolders: false).map {
             var sourceMarkdown = $0
             sourceMarkdown.markdown.metadata["type"] = "post"
-            sourceMarkdown.markdown.targetPath = $0.file.path(relativeTo: rootFolder).split(separator: ".").dropLast().joined() + ".html"
+            sourceMarkdown.targetPath = $0.file.path(relativeTo: rootFolder).split(separator: ".").dropLast().joined() + ".html"
+            sourceMarkdown.markdown.targetPath = $0.targetPath
             for processor in markdownProcessors {
                 sourceMarkdown.markdown = processor(sourceMarkdown.markdown)
             }
