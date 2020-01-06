@@ -41,7 +41,7 @@ public class Content {
             var sourceMarkdown = $0
             sourceMarkdown.markdown.metadata["type"] = "post"
             sourceMarkdown.targetPath = $0.file.path(relativeTo: rootFolder).split(separator: ".").dropLast().joined() + ".html"
-            sourceMarkdown.markdown.targetPath = $0.targetPath
+            sourceMarkdown.markdown.targetPath = sourceMarkdown.targetPath
             for processor in markdownProcessors {
                 sourceMarkdown.markdown = processor(sourceMarkdown.markdown)
             }
@@ -53,7 +53,7 @@ public class Content {
             var sourceMarkdown = $0
             sourceMarkdown.markdown.metadata["type"] = "page"
             sourceMarkdown.targetPath = $0.file.path(relativeTo: pagesFolder).split(separator: ".").dropLast().joined() + ".html"
-            sourceMarkdown.markdown.targetPath = $0.targetPath
+            sourceMarkdown.markdown.targetPath = sourceMarkdown.targetPath
             for processor in markdownProcessors {
                 sourceMarkdown.markdown = processor(sourceMarkdown.markdown)
             }

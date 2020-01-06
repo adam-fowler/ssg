@@ -10,7 +10,7 @@ public extension Node where Context: HTML.BodyContext {
                     .class("brief_header"),
                     .a(
                         .unwrap(markdown.targetPath) {
-                            .href($0)
+                            .href("/\($0)")
                         },
                         .h2(.text($0))
                     )
@@ -21,7 +21,7 @@ public extension Node where Context: HTML.BodyContext {
                     .class("brief_image"),
                     .a(
                         .unwrap(markdown.targetPath) {
-                            .href($0)
+                            .href("/\($0)")
                         },
                         .img(.src($0))
                     )
