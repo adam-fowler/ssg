@@ -2,11 +2,20 @@ import Files
 import Foundation
 import Ink
 
+public extension Markdown {
+    static let targetPathKey = "_TARGET_PATH_KEY_"
+    
+    var targetPath: String? {
+        get { metadata[Self.targetPathKey] }
+        set(value) { metadata[Self.targetPathKey] = value }
+    }
+}
+
 public class Content {
     public struct SourceMarkdown {
         public let file: File
         public let lastModified: Date
-        public let targetPath: String
+        public var targetPath: String
         public var markdown: Markdown
     }
 
@@ -23,26 +32,25 @@ public class Content {
     func load() throws {
         let postsFolder = try rootFolder.subfolder(at: "posts")
         self.posts = try loadMarkdown(from: postsFolder, includeSubFolders: false).map {
-            var markdown = $0.markdown
-            markdown.metadata["type"] = "post"
-            return SourceMarkdown(
-                file: $0.file,
-                lastModified: $0.lastModified,
-                targetPath: $0.targetPath,
-                markdown: markdown
-            )
+            var sourceMarkdown = $0
+            sourceMarkdown.markdown.metadata["type"] = "post"
+            sourceMarkdown.targetPath = $0.targetPath
+            for processor in markdownProcessors {
+                sourceMarkdown.markdown = processor(sourceMarkdown.markdown)
+            }
+            return sourceMarkdown
         }.sorted { $0.lastModified > $1.lastModified }
 
         let pagesFolder = try rootFolder.subfolder(at: "pages")
         self.pages = try loadMarkdown(from: pagesFolder, includeSubFolders: true).map {
-            var markdown = $0.markdown
-            markdown.metadata["type"] = "page"
-            return SourceMarkdown(
-                file: $0.file,
-                lastModified: $0.lastModified,
-                targetPath: $0.file.path(relativeTo: pagesFolder).split(separator: ".").dropLast().joined() + ".html",
-                markdown: markdown
-            )
+            var sourceMarkdown = $0
+            sourceMarkdown.markdown.metadata["type"] = "page"
+            sourceMarkdown.targetPath = $0.file.path(relativeTo: pagesFolder).split(separator: ".").dropLast().joined() + ".html"
+            sourceMarkdown.targetPath = $0.targetPath
+            for processor in markdownProcessors {
+                sourceMarkdown.markdown = processor(sourceMarkdown.markdown)
+            }
+            return sourceMarkdown
         }.sorted { $0.lastModified > $1.lastModified }
     }
 
@@ -79,4 +87,5 @@ public class Content {
 
     var rootFolder: Folder
     var dateFormatter: DateFormatter
+    var markdownProcessors: [(Markdown) -> Markdown] = []
 }

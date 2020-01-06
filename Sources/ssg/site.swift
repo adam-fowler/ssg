@@ -6,6 +6,11 @@ import Plot
 open class Site {
     public typealias Metadata = [String: String]
     
+    public var address: String
+    public var rootFolder: Folder
+    public var htmlFolder: Folder
+    public var content: Content
+    
     public init(address: String, src: Folder, dest: Folder) {
         self.address = address
         self.rootFolder = src
@@ -26,28 +31,32 @@ open class Site {
         try content.load()
     }
     
+    public func addFileProcessor(for extension: String, process: @escaping (File, Folder) throws -> ()) {
+        fileProcessors[`extension`] = process
+    }
+    
+    public func addMarkdownProcessor(_ cb: @escaping (Markdown) -> Markdown) {
+        content.markdownProcessors.append(cb)
+    }
+    
     public func addHeadGenerator(_ cb: @escaping (Metadata)->[Node<HTML.HeadContext>]) {
-        headGenerator.append(cb)
+        headGenerators.append(cb)
     }
     
     public func addHeaderGenerator(_ cb: @escaping (Metadata)->Node<HTML.BodyContext>) {
-        headerGenerator.append(cb)
+        headerGenerators.append(cb)
     }
     
     public func addContentsGenerator(_ cb: @escaping (Markdown)->Node<HTML.BodyContext>) {
-        contentsGenerator.append(cb)
+        contentsGenerators.append(cb)
     }
     
     public func insertContentsGenerator(_ cb: @escaping (Markdown)->Node<HTML.BodyContext>, at index: Int) {
-        contentsGenerator.insert(cb, at: index)
+        contentsGenerators.insert(cb, at: index)
     }
     
     public func addFooterGenerator(_ cb: @escaping (Metadata)->Node<HTML.BodyContext>) {
-        footerGenerator.append(cb)
-    }
-    
-    public func addFileProcess(for extension: String, process: @escaping (File, Folder) throws -> ()) {
-        fileProcesses[`extension`] = process
+        footerGenerators.append(cb)
     }
     
     /// copy contents of folder to another folder
@@ -101,7 +110,7 @@ open class Site {
     }
     
     public func copyAndProcessFile(file: File, destination: Folder) throws {
-        for (ext, process) in fileProcesses {
+        for (ext, process) in fileProcessors {
             if file.extension == ext {
                 try process(file, destination)
                 return
@@ -132,7 +141,7 @@ open class Site {
     public func contents(_ markdown: Markdown) -> Node<HTML.BodyContext> {
         return .div (
             .class("content \(markdown.metadata["type"] ?? "")"),
-            .forEach(contentsGenerator) {
+            .forEach(contentsGenerators) {
                 .group($0(markdown))
             }
         )
@@ -142,21 +151,21 @@ open class Site {
     public func outputHTML(contents: Node<HTML.BodyContext>, metadata: Metadata, path: String, lastModified: Date = Date(), priority: Double = 0.5) throws {
         let html = HTML(
             .head(
-                .forEach(headGenerator) {
+                .forEach(headGenerators) {
                     .group($0(metadata))
                 }
             ),
             .body(
                 .div(
                     .class("header"),
-                    .forEach(headerGenerator) {
+                    .forEach(headerGenerators) {
                         .group($0(metadata))
                     }
                 ),
                 contents,
                 .div(
                     .class("footer"),
-                    .forEach(footerGenerator) {
+                    .forEach(footerGenerators) {
                         .group($0(metadata))
                     }
                 )
@@ -170,16 +179,12 @@ open class Site {
         try siteMap.output(htmlFolder)
     }
     
-    var address: String
-    var rootFolder: Folder
-    var htmlFolder: Folder
-    public var content: Content
-    var siteMap: XMLSitemap
+    private var siteMap: XMLSitemap
     
-    var headGenerator: [(Metadata)->[Node<HTML.HeadContext>]] = []
-    var headerGenerator: [(Metadata)->Node<HTML.BodyContext>] = []
-    var contentsGenerator: [(Markdown)->Node<HTML.BodyContext>] = []
-    var footerGenerator: [(Metadata)->Node<HTML.BodyContext>] = []
-    var fileProcesses: [String: (File, Folder) throws -> ()] = [:]
+    private var headGenerators: [(Metadata)->[Node<HTML.HeadContext>]] = []
+    private var headerGenerators: [(Metadata)->Node<HTML.BodyContext>] = []
+    private var contentsGenerators: [(Markdown)->Node<HTML.BodyContext>] = []
+    private var footerGenerators: [(Metadata)->Node<HTML.BodyContext>] = []
+    private var fileProcessors: [String: (File, Folder) throws -> ()] = [:]
 }
 
