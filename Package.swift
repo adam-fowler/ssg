@@ -15,7 +15,7 @@ let package = Package(
         .package(url: "https://github.com/JohnSundell/Plot.git", from: "0.0.0")
     ],
     targets: [
-        .target(name: "ssg", dependencies: []),
+        .target(name: "ssg", dependencies: ["Files", "Ink", "Plot"]),
         .testTarget(name: "ssgTests", dependencies: ["ssg"]),
     ]
 )

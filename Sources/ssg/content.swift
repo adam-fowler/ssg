@@ -26,6 +26,12 @@ public class Content {
         self.dateFormatter.locale = Locale(identifier: "en_US_POSIX")
         self.dateFormatter.dateFormat = "d MMM yyy HH:mm:ss"
         self.dateFormatter.timeZone = TimeZone(secondsFromGMT: 0)
+        
+        markdownProcessors.append {
+            var markdown = $0
+            markdown.metadata["title"] = markdown.title
+            return markdown
+        }
     }
 
     /// load markdown for posts and pages
@@ -34,7 +40,7 @@ public class Content {
         self.posts = try loadMarkdown(from: postsFolder, includeSubFolders: false).map {
             var sourceMarkdown = $0
             sourceMarkdown.markdown.metadata["type"] = "post"
-            sourceMarkdown.targetPath = $0.targetPath
+            sourceMarkdown.markdown.targetPath = $0.file.path(relativeTo: rootFolder).split(separator: ".").dropLast().joined() + ".html"
             for processor in markdownProcessors {
                 sourceMarkdown.markdown = processor(sourceMarkdown.markdown)
             }
@@ -46,7 +52,7 @@ public class Content {
             var sourceMarkdown = $0
             sourceMarkdown.markdown.metadata["type"] = "page"
             sourceMarkdown.targetPath = $0.file.path(relativeTo: pagesFolder).split(separator: ".").dropLast().joined() + ".html"
-            sourceMarkdown.targetPath = $0.targetPath
+            sourceMarkdown.markdown.targetPath = $0.targetPath
             for processor in markdownProcessors {
                 sourceMarkdown.markdown = processor(sourceMarkdown.markdown)
             }

@@ -122,7 +122,7 @@ open class Site {
     /// output HTML files for all the website posts
     public func outputPostsHTML() throws {
         for post in content.posts {
-            try outputHTML(markdown: post.markdown, path: "posts/\(post.file.nameExcludingExtension).html", lastModified: post.file.modificationDate ?? post.lastModified, priority: 0.25)
+            try outputHTML(markdown: post.markdown, path: "\(post.file.nameExcludingExtension).html", lastModified: post.file.modificationDate ?? post.lastModified, priority: 0.25)
         }
     }
     
