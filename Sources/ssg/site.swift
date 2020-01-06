@@ -126,7 +126,7 @@ open class Site {
 
     /// output HTML file given a title, contents and path to save to
     func outputHTML(markdown: Markdown, path: String, lastModified: Date = Date(), priority: Double = 0.5) throws {
-        try outputHTML(title: markdown.title, contents: contents(markdown), metadata: markdown.metadata, path: path, lastModified: lastModified, priority: priority)
+        try outputHTML(contents: contents(markdown), metadata: markdown.metadata, path: path, lastModified: lastModified, priority: priority)
     }
     
     public func contents(_ markdown: Markdown) -> Node<HTML.BodyContext> {
@@ -139,7 +139,7 @@ open class Site {
     }
     
     /// output HTML file given a title, contents and path to save to
-    public func outputHTML(title: String?, contents: Node<HTML.BodyContext>, metadata: Metadata, path: String, lastModified: Date = Date(), priority: Double = 0.5) throws {
+    public func outputHTML(contents: Node<HTML.BodyContext>, metadata: Metadata, path: String, lastModified: Date = Date(), priority: Double = 0.5) throws {
         let html = HTML(
             .head(
                 .forEach(headGenerator) {
