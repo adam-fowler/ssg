@@ -140,7 +140,9 @@ open class Site {
     
     public func contents(_ markdown: Markdown) -> Node<HTML.BodyContext> {
         return .div (
-            .unwrap(markdown.metadata["type"]) {.class($0)},
+            .if(markdown.metadata["type"] != nil,
+                .unwrap(markdown.metadata["type"]) {.class("section \($0)")},
+                else: .class("section")),
             .forEach(contentsGenerators) {
                 .group($0(markdown))
             }
