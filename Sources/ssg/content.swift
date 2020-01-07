@@ -4,10 +4,43 @@ import Ink
 
 public extension Markdown {
     static let targetPathKey = "_TARGET_PATH_KEY_"
-    
+    static let idKey = "_ID_KEY_"
+    static let prevPostKey = "_PREV_POST_KEY_"
+    static let nextPostKey = "_NEXT_POST_KEY_"
+
     var targetPath: String? {
         get { metadata[Self.targetPathKey] }
         set(value) { metadata[Self.targetPathKey] = value }
+    }
+    
+    private func get<T: LosslessStringConvertible>(key: String) -> T? {
+        if let id = metadata[key] {
+            return T(id)
+        }
+        return nil
+    }
+    
+    private mutating func set<T: LosslessStringConvertible>(key: String, value:T?) {
+        if let value = value {
+            metadata[key] = value.description
+        } else {
+            metadata[key] = nil
+        }
+    }
+    
+    var id: Int? {
+        get { return get(key: Self.idKey) }
+        set(value) { set(key: Self.idKey, value: value) }
+    }
+    
+    var prevPost: Int? {
+        get { return get(key: Self.prevPostKey) }
+        set(value) { set(key: Self.prevPostKey, value: value) }
+    }
+    
+    var nextPost: Int? {
+        get { return get(key: Self.nextPostKey) }
+        set(value) { set(key: Self.nextPostKey, value: value) }
     }
 }
 
@@ -18,6 +51,9 @@ public class Content {
         public var targetPath: String
         public var markdown: Markdown
     }
+
+    public var posts: [SourceMarkdown] = []
+    public var pages: [SourceMarkdown] = []
 
     init(_ folder: Folder) {
         self.rootFolder = folder
@@ -32,6 +68,18 @@ public class Content {
             markdown.metadata["title"] = markdown.title
             return markdown
         }
+    }
+
+    /// get post with id
+    public func getPost(with id: Int) -> Markdown? {
+        let idString = String(id)
+        return posts.first { $0.markdown.metadata[Markdown.idKey] == idString }?.markdown
+    }
+    
+    /// get post with id
+    public func getPage(with id: Int) -> Markdown? {
+        let idString = String(id)
+        return pages.first { $0.markdown.metadata[Markdown.idKey] == idString }?.markdown
     }
 
     /// load markdown for posts and pages
@@ -59,6 +107,8 @@ public class Content {
             }
             return sourceMarkdown
         }.sorted { $0.lastModified > $1.lastModified }
+        
+        calculateNextPreviousPostIds()
     }
 
     /// load markdown files from folder
@@ -68,7 +118,12 @@ public class Content {
         let pages = try folder.files.map { (file)->SourceMarkdown in
             let contents = try file.readAsString(encodedAs: .utf8)
             var lastModified = file.modificationDate ?? Date(timeIntervalSince1970: 0)
-            let markdown = parser.parse(contents)
+            var markdown = parser.parse(contents)
+            
+            // set id and increment, ensures every block of markdown has a unique id
+            markdown.id = currentId
+            currentId = currentId + 1
+            
             if let createdOn = markdown.metadata["published_on"] {
                 if let date = dateFormatter.date(from: createdOn) {
                     lastModified = date
@@ -89,10 +144,22 @@ public class Content {
         return pages
     }
 
-    public var posts: [SourceMarkdown] = []
-    public var pages: [SourceMarkdown] = []
+    /// calculate next/previous post ids
+    func calculateNextPreviousPostIds() {
+        guard posts.count > 0 else {return}
+        var prevPost: Int? = nil
+        for i in 0..<posts.count-1 {
+            posts[i].markdown.nextPost = prevPost
+            posts[i].markdown.prevPost = posts[i+1].markdown.id
+            prevPost = posts[i].markdown.id
+        }
+        posts[posts.count-1].markdown.nextPost = prevPost
+    }
+    
 
-    var rootFolder: Folder
-    var dateFormatter: DateFormatter
     var markdownProcessors: [(Markdown) -> Markdown] = []
+
+    private var rootFolder: Folder
+    private var dateFormatter: DateFormatter
+    private var currentId: Int = 0
 }
