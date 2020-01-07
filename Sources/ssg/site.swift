@@ -140,7 +140,7 @@ open class Site {
     
     public func contents(_ markdown: Markdown) -> Node<HTML.BodyContext> {
         return .div (
-            .class("content \(markdown.metadata["type"] ?? "")"),
+            .unwrap(markdown.metadata["type"]) {.class($0)},
             .forEach(contentsGenerators) {
                 .group($0(markdown))
             }
@@ -156,18 +156,25 @@ open class Site {
                 }
             ),
             .body(
-                .div(
-                    .class("header"),
-                    .forEach(headerGenerators) {
-                        .group($0(metadata))
-                    }
+                .if(metadata["no_header"] == nil,
+                    .div(
+                        .class("header"),
+                        .forEach(headerGenerators) {
+                            .group($0(metadata))
+                        }
+                    )
                 ),
-                contents,
                 .div(
-                    .class("footer"),
-                    .forEach(footerGenerators) {
-                        .group($0(metadata))
-                    }
+                    .class("content"),
+                    contents
+                ),
+                .if(metadata["no_footer"] == nil,
+                    .div(
+                        .class("footer"),
+                        .forEach(footerGenerators) {
+                            .group($0(metadata))
+                        }
+                    )
                 )
             )
         )
