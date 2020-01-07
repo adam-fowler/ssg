@@ -38,7 +38,8 @@ public extension Node where Context: HTML.BodyContext {
             .div(
                 .class("brief_body"),
                 .p(.raw(markdown.brief()))
-            )
+            ),
+            .div(.style("clear: both;"))
         )
     }
 
