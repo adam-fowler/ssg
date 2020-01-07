@@ -1,8 +1,10 @@
+import Foundation
 import Ink
 import Plot
 
 public extension Node where Context: HTML.BodyContext {
-    static func brief(_ markdown: Markdown) -> Self {
+    static func brief(_ sourceMarkdown: Content.SourceMarkdown, dateFormatter: DateFormatter? = nil) -> Self {
+        let markdown = sourceMarkdown.markdown
         return .div (
             .class("brief"),
             .unwrap(markdown.metadata["title"]) {
@@ -14,6 +16,12 @@ public extension Node where Context: HTML.BodyContext {
                         },
                         .h2(.text($0))
                     )
+                )
+            },
+            .unwrap(dateFormatter) {
+                .div(
+                    .class("brief_date"),
+                    .text($0.string(from: sourceMarkdown.lastModified))
                 )
             },
             .unwrap(markdown.metadata["featured_image"]) {
@@ -34,13 +42,13 @@ public extension Node where Context: HTML.BodyContext {
         )
     }
 
-    static func latest(_ content: Content, numPosts: Int = 5) -> Self {
+    static func latest(_ content: Content, numPosts: Int = 5, dateFormatter: DateFormatter? = nil) -> Self {
         let endIndex = min(numPosts, content.posts.count)
         let postsForPage = content.posts[0..<endIndex]
         return .div (
             .class("latest"),
             .forEach(postsForPage) {
-                .brief($0.markdown)
+                .brief($0, dateFormatter: dateFormatter)
             }
         )
     }
