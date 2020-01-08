@@ -227,6 +227,17 @@ open class Site {
         ]
     }
     
+    func installFile(_ filename: String, to folder: String) throws {
+        let sourceFolder = try File(path:#file).parent
+        let targetFolder = try htmlFolder.createSubfolderIfNeeded(at: folder)
+        if let jsFile = try sourceFolder?.file(at: filename) {
+            if let targetFile = try? targetFolder.file(at: jsFile.name) {
+                try targetFile.delete()
+            }
+            try jsFile.copy(to: targetFolder)
+        }
+    }
+
     private var siteMap: XMLSitemap
     
     private var headGenerators: [(Metadata)->[Node<HTML.HeadContext>]] = []
