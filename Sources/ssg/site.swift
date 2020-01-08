@@ -70,6 +70,10 @@ open class Site {
         footerGenerators.append(cb)
     }
     
+    public func addEndGenerator(_ cb: @escaping (Metadata)->Node<HTML.BodyContext>) {
+        endGenerators.append(cb)
+    }
+    
     /// copy contents of folder to another folder
     public func syncFolder(folderName: String) throws {
         let srcFolder = try rootFolder.subfolder(at: folderName)
@@ -200,7 +204,10 @@ open class Site {
                             .group($0(metadata))
                         }
                     )
-                )
+                ),
+                .forEach(endGenerators) {
+                    .group($0(metadata))
+                }
             )
         )
         _ = try htmlFolder.createFile(at: path, contents: Data(html.render().utf8))
@@ -244,6 +251,7 @@ open class Site {
     private var headerGenerators: [(Metadata)->Node<HTML.BodyContext>] = []
     private var contentsGenerators: [(Markdown)->Node<HTML.BodyContext>] = []
     private var footerGenerators: [(Metadata)->Node<HTML.BodyContext>] = []
+    private var endGenerators: [(Metadata)->Node<HTML.BodyContext>] = []
     private var fileProcessors: [String: (File, Folder) throws -> ()] = [:]
 }
 
