@@ -6,13 +6,20 @@ import Plot
 open class Site {
     public typealias Metadata = [String: String]
     
-    public var address: String
+    public var webSiteName: String
+    public var webSiteAddress: String
     public var rootFolder: Folder
     public var htmlFolder: Folder
     public var content: Content
     
-    public init(address: String, src: Folder, dest: Folder) {
-        self.address = address
+    public init(webSiteName: String, address: String, src: Folder, dest: Folder) {
+        self.webSiteName = webSiteName
+        // ensure the website address doesn't end with a "/"
+        if address.last == "/" {
+            self.webSiteAddress = String(address.dropLast())
+        } else {
+            self.webSiteAddress = address
+        }
         self.rootFolder = src
         self.htmlFolder = dest
 
@@ -25,6 +32,8 @@ open class Site {
                 .raw(markdown.html)
             )
         }
+        
+        addHeadGenerator(standardHead)
     }
     
     public func load() throws {
@@ -151,6 +160,11 @@ open class Site {
     
     /// output HTML file given a title, contents and path to save to
     public func outputHTML(contents: Node<HTML.BodyContext>, metadata: Metadata, path: String, lastModified: Date = Date(), priority: Double = 0.5) throws {
+        var metadata = metadata
+        // if target path isn't set in the metadata set it now
+        if metadata[Markdown.targetPathKey] == nil {
+            metadata[Markdown.targetPathKey] = path
+        }
         let html = HTML(
             .head(
                 .forEach(headGenerators) {
@@ -181,11 +195,27 @@ open class Site {
             )
         )
         _ = try htmlFolder.createFile(at: path, contents: Data(html.render().utf8))
-        siteMap.addEntry(url: "\(address)/\(path)", lastModified: lastModified, priority: priority)
+        siteMap.addEntry(url: "\(webSiteAddress)/\(path)", lastModified: lastModified, priority: priority)
     }
     
     public func outputXMLSitemap() throws {
         try siteMap.output(htmlFolder)
+    }
+    
+    /// Return standard head data
+    func standardHead(_ metadata: Metadata) -> [Node<HTML.HeadContext>] {
+        return [
+            .encoding(.utf8),
+            .siteName(webSiteName),
+            .title(metadata["title"] != nil ? "\(metadata["title"]!) - \(webSiteName)" : "Viewfinder Preview"),
+            .unwrap(metadata["description"]) {.description($0)},
+            .unwrap(metadata[Markdown.targetPathKey]) {.url("\(webSiteAddress)/\($0)")},
+            .if(metadata["socialmedia_image"] != nil,
+                .unwrap(metadata["socialmedia_image"]) {.socialImageLink($0)},
+                else: .unwrap(metadata["featured_image"]) {.socialImageLink($0)}
+            ),
+            .twitterCardType(.summaryLargeImage)
+        ]
     }
     
     private var siteMap: XMLSitemap
