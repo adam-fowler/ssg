@@ -12,7 +12,7 @@ public extension Node where Context: HTML.BodyContext {
                 .id("cookie-notice-text"),
                 .text("We use cookies to ensure we give the best experience on our website. If you continue to use this website we will assume you are happy with this.")
             ),
-            .a(.id("cookie-notice-button"), .href(""), .text("Ok"), .attribute(named: "onclick", value: "cookieNoticeAccept();")),
+            .a(.id("cookie-notice-button"), .href(""), .onclick("cookieNoticeAccept();"), .text("Ok")),
             .script(.text("var script=document.createElement('script');script.onload=function (){cookieNotice()};script.src='/js/cookie-notice.js';document.head.appendChild(script);"))
         )
     }
