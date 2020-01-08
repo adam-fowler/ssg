@@ -42,12 +42,16 @@ open class Site {
         try content.load()
     }
     
-    public func addFileProcessor(for extension: String, process: @escaping (File, Folder) throws -> ()) {
-        fileProcessors[`extension`] = process
+    public func addMarkdownModifier(_ modifier: Modifier) {
+        content.parser.addModifier(modifier)
     }
     
     public func addMarkdownProcessor(_ cb: @escaping (Markdown) -> Markdown) {
         content.markdownProcessors.append(cb)
+    }
+    
+    public func addFileProcessor(for extension: String, process: @escaping (File, Folder) throws -> ()) {
+        fileProcessors[`extension`] = process
     }
     
     public func addHeadGenerator(_ cb: @escaping (Metadata)->[Node<HTML.HeadContext>]) {

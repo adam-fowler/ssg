@@ -117,7 +117,6 @@ public class Content {
 
     /// load markdown files from folder
     func loadMarkdown(from folder: Folder, includeSubFolders: Bool) throws -> [SourceMarkdown] {
-        let parser = MarkdownParser()
 
         let pages = try folder.files.map { (file)->SourceMarkdown in
             let contents = try file.readAsString(encodedAs: .utf8)
@@ -162,6 +161,7 @@ public class Content {
     
 
     var markdownProcessors: [(Markdown) -> Markdown] = []
+    var parser = MarkdownParser()
 
     private var rootFolder: Folder
     private var dateFormatter: DateFormatter
