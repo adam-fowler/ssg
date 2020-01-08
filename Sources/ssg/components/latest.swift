@@ -3,7 +3,7 @@ import Ink
 import Plot
 
 public extension Node where Context: HTML.BodyContext {
-    static func brief(_ sourceMarkdown: Content.SourceMarkdown, dateFormatter: DateFormatter? = nil) -> Self {
+    static func brief(_ sourceMarkdown: Content.SourceMarkdown, dateFormatter: DateFormatter? = nil, nodeToAppend: Node<HTML.BodyContext> = .empty) -> Self {
         let markdown = sourceMarkdown.markdown
         return .div (
             .class("brief"),
@@ -39,17 +39,17 @@ public extension Node where Context: HTML.BodyContext {
                 .class("brief_body"),
                 .p(.raw(markdown.brief()))
             ),
-            .div(.style("clear: both;"))
+            nodeToAppend
         )
     }
 
-    static func latest(_ content: Content, numPosts: Int = 5, dateFormatter: DateFormatter? = nil) -> Self {
+    static func latest(_ content: Content, numPosts: Int = 5, dateFormatter: DateFormatter? = nil, insert: (Content.SourceMarkdown)->Node<HTML.BodyContext> = { _ in return .empty }) -> Self {
         let endIndex = min(numPosts, content.posts.count)
         let postsForPage = content.posts[0..<endIndex]
         return .div (
             .class("latest"),
             .forEach(postsForPage) {
-                .brief($0, dateFormatter: dateFormatter)
+                .brief($0, dateFormatter: dateFormatter, nodeToAppend: insert($0))
             }
         )
     }
