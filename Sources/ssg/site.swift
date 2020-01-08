@@ -227,7 +227,7 @@ open class Site {
         return [
             .encoding(.utf8),
             .siteName(webSiteName),
-            .title(metadata["title"] != nil ? "\(metadata["title"]!) - \(webSiteName)" : "Viewfinder Preview"),
+            .title(metadata["title"] != nil ? "\(metadata["title"]!) - \(webSiteName)" : webSiteName),
             .unwrap(metadata["description"]) {.description($0)},
             .unwrap(metadata[Markdown.targetPathKey]) {.url("\(webSiteAddress)/\($0)")},
             .if(metadata["socialmedia_image"] != nil,
