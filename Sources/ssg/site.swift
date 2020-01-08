@@ -8,11 +8,12 @@ open class Site {
     
     public var webSiteName: String
     public var webSiteAddress: String
+    public var language: Language
     public var rootFolder: Folder
     public var htmlFolder: Folder
     public var content: Content
     
-    public init(webSiteName: String, address: String, src: Folder, dest: Folder) {
+    public init(webSiteName: String, address: String, language: Language = .english, src: Folder, dest: Folder) {
         self.webSiteName = webSiteName
         // ensure the website address doesn't end with a "/"
         if address.last == "/" {
@@ -20,6 +21,7 @@ open class Site {
         } else {
             self.webSiteAddress = address
         }
+        self.language = language
         self.rootFolder = src
         self.htmlFolder = dest
 
@@ -165,7 +167,13 @@ open class Site {
         if metadata[Markdown.targetPathKey] == nil {
             metadata[Markdown.targetPathKey] = path
         }
+        var language = self.language
+        // markdown can override the page language
+        if let pageLanguage = metadata["lang"] {
+            language = Language(rawValue: pageLanguage) ?? self.language
+        }
         let html = HTML(
+            .lang(language),
             .head(
                 .forEach(headGenerators) {
                     .group($0(metadata))
@@ -182,6 +190,7 @@ open class Site {
                 ),
                 .div(
                     .class("content"),
+                    .id("main"),
                     contents
                 ),
                 .if(metadata["no_footer"] == nil,
