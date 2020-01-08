@@ -65,7 +65,11 @@ public class Content {
         
         markdownProcessors.append {
             var markdown = $0
-            markdown.metadata["title"] = markdown.title
+            if let title = markdown.metadata["title"] {
+                markdown.title = title
+            } else {
+                markdown.metadata["title"] = markdown.title
+            }
             return markdown
         }
     }
