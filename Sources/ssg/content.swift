@@ -62,7 +62,12 @@ public class Content {
         self.dateFormatter.locale = Locale(identifier: "en_US_POSIX")
         self.dateFormatter.dateFormat = "d MMM yyy HH:mm:ss"
         self.dateFormatter.timeZone = TimeZone(secondsFromGMT: 0)
-        
+
+        self.folderDateFormatter = DateFormatter()
+        self.folderDateFormatter.locale = Locale(identifier: "en_US_POSIX")
+        self.folderDateFormatter.dateFormat = "yyyy'/'MM"
+        self.folderDateFormatter.timeZone = TimeZone(secondsFromGMT: 0)
+
         markdownProcessors.append {
             var markdown = $0
             if let title = markdown.metadata["title"] {
@@ -92,7 +97,9 @@ public class Content {
         self.posts = try loadMarkdown(from: postsFolder, includeSubFolders: false).map {
             var sourceMarkdown = $0
             sourceMarkdown.markdown.metadata["type"] = "post"
-            sourceMarkdown.targetPath = $0.file.path(relativeTo: rootFolder).split(separator: ".").dropLast().joined() + ".html"
+            // work out target path
+            let folder = folderDateFormatter.string(from: $0.lastModified)
+            sourceMarkdown.targetPath = "\(folder)/\($0.file.path(relativeTo: postsFolder).split(separator: ".").dropLast().joined()).html"
             sourceMarkdown.markdown.targetPath = sourceMarkdown.targetPath
             for processor in markdownProcessors {
                 sourceMarkdown.markdown = processor(sourceMarkdown.markdown)
@@ -164,6 +171,7 @@ public class Content {
     var parser = MarkdownParser()
 
     private var rootFolder: Folder
+    private var folderDateFormatter: DateFormatter
     private var dateFormatter: DateFormatter
     private var currentId: Int = 0
 }
