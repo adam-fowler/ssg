@@ -12,6 +12,13 @@ open class Site {
         var webSiteAddress : String
         var language: Language
         var cdn: String?
+        
+        public init(webSiteName: String, webSiteAddress : String, language: Language, cdn: String? = nil) {
+            self.webSiteName = webSiteName
+            self.webSiteAddress = webSiteAddress
+            self.language = language
+            self.cdn = cdn
+        }
     }
 
     public var config: Configuration
