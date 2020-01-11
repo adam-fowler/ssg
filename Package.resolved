@@ -12,11 +12,11 @@
       },
       {
         "package": "Ink",
-        "repositoryURL": "https://github.com/JohnSundell/Ink.git",
+        "repositoryURL": "https://github.com/adam-fowler/Ink.git",
         "state": {
-          "branch": null,
-          "revision": "c88bbce588a1ebfde2cf4d61eb9865a3edaa27d4",
-          "version": "0.2.0"
+          "branch": "markdown-in-html",
+          "revision": "07e6a7e3f6e142b57b9d467244bbba45f4dc197d",
+          "version": null
         }
       },
       {
@@ -26,6 +26,15 @@
           "branch": null,
           "revision": "00bd4d695b20dba3ec7a09997c5817e55feb8893",
           "version": "0.4.0"
+        }
+      },
+      {
+        "package": "Reader",
+        "repositoryURL": "https://github.com/adam-fowler/reader.git",
+        "state": {
+          "branch": "master",
+          "revision": "42c31222f1a9fa4812f7e4ae0f1c9ed477fb345c",
+          "version": null
         }
       }
     ]

@@ -2,32 +2,45 @@ import Files
 import Foundation
 import Ink
 import Plot
+import Reader
 
 open class Site {
     public typealias Metadata = [String: String]
-    
-    public var webSiteName: String
-    public var webSiteAddress: String
-    public var language: Language
+
+    public struct Configuration {
+        var webSiteName: String
+        var webSiteAddress : String
+        var language: Language
+        var cdn: String?
+    }
+
+    public var config: Configuration
     public var rootFolder: Folder
     public var htmlFolder: Folder
     public var content: Content
     
-    public init(webSiteName: String, address: String, language: Language = .english, src: Folder, dest: Folder) {
-        self.webSiteName = webSiteName
+    public init(configuration: Configuration, src: Folder, dest: Folder) {
+        self.config = configuration
         // ensure the website address doesn't end with a "/"
-        if address.last == "/" {
-            self.webSiteAddress = String(address.dropLast())
-        } else {
-            self.webSiteAddress = address
+        if config.webSiteAddress.last == "/" {
+            config.webSiteAddress = String(config.webSiteAddress.dropLast())
         }
-        self.language = language
+
         self.rootFolder = src
         self.htmlFolder = dest
 
         self.content = Content(src)
         self.siteMap = XMLSitemap()
         
+        // add markdown URL editor for CDN address
+        if var cdn = config.cdn {
+            if cdn.last == "/" {
+                cdn = String(cdn.dropLast())
+            }
+            addImageURLPrefix(cdn)
+        }
+
+        // add contents generator that outputs a pages main content
         addContentsGenerator { markdown in
             return .div(
                 .class("content_body"),
@@ -35,6 +48,7 @@ open class Site {
             )
         }
         
+        // add standard website head entries
         addHeadGenerator(standardHead)
     }
     
@@ -175,10 +189,10 @@ open class Site {
         if metadata[Markdown.targetPathKey] == nil {
             metadata[Markdown.targetPathKey] = path
         }
-        var language = self.language
+        var language = config.language
         // markdown can override the page language
         if let pageLanguage = metadata["lang"] {
-            language = Language(rawValue: pageLanguage) ?? self.language
+            language = Language(rawValue: pageLanguage) ?? config.language
         }
         let html = HTML(
             .lang(language),
@@ -215,7 +229,7 @@ open class Site {
             )
         )
         _ = try htmlFolder.createFile(at: path, contents: Data(html.render().utf8))
-        siteMap.addEntry(url: "\(webSiteAddress)/\(path)", lastModified: lastModified, priority: priority)
+        siteMap.addEntry(url: "\(config.webSiteAddress)/\(path)", lastModified: lastModified, priority: priority)
     }
     
     public func outputXMLSitemap() throws {
@@ -226,10 +240,10 @@ open class Site {
     func standardHead(_ metadata: Metadata) -> [Node<HTML.HeadContext>] {
         return [
             .encoding(.utf8),
-            .siteName(webSiteName),
-            .title(metadata["title"] != nil ? "\(metadata["title"]!) - \(webSiteName)" : webSiteName),
+            .siteName(config.webSiteName),
+            .title(metadata["title"] != nil ? "\(metadata["title"]!) - \(config.webSiteName)" : config.webSiteName),
             .unwrap(metadata["description"]) {.description($0)},
-            .unwrap(metadata[Markdown.targetPathKey]) {.url("\(webSiteAddress)/\($0)")},
+            .unwrap(metadata[Markdown.targetPathKey]) {.url("\(config.webSiteAddress)/\($0)")},
             .if(metadata["socialmedia_image"] != nil,
                 .unwrap(metadata["socialmedia_image"]) {.socialImageLink($0)},
                 else: .unwrap(metadata["featured_image"]) {.socialImageLink($0)}
@@ -249,6 +263,36 @@ open class Site {
         }
     }
 
+    func addImageURLPrefix(_ prefix: String) {
+        addMarkdownModifier(Modifier(target: .images) { input in
+            let reader = Reader(input.html)
+            let speechMarks = Set("'\"")
+            do {
+                try reader.read("<img src=")
+                try reader.read(speechMarks)
+                let url = reader.read(until: speechMarks)
+                guard url[url.startIndex] == "/" else { return input.html }
+                let remains = reader.readUntilTheEnd()
+                return "<img src=\"\(prefix)\(url)\"\(remains)"
+            } catch {
+                return input.html
+            }
+        })
+        
+        addMarkdownProcessor {
+            var markdown = $0
+            if let featuredImage = markdown.metadata["featured_image"],
+                featuredImage[featuredImage.startIndex] == "/" {
+                markdown.metadata["featured_image"] = prefix + featuredImage
+            }
+            if let socialMediaImage = markdown.metadata["socialmedia_image"],
+                socialMediaImage[socialMediaImage.startIndex] == "/" {
+                markdown.metadata["socialmedia_image"] = prefix + socialMediaImage
+            }
+            return markdown
+        }
+    }
+    
     private var siteMap: XMLSitemap
     
     private var headGenerators: [(Metadata)->[Node<HTML.HeadContext>]] = []

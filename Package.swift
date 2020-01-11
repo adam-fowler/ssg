@@ -11,11 +11,12 @@ let package = Package(
     ],
     dependencies: [
         .package(url: "https://github.com/JohnSundell/Files.git", from: "4.0.0"),
-        .package(url: "https://github.com/JohnSundell/Ink.git", from: "0.0.0"),
-        .package(url: "https://github.com/JohnSundell/Plot.git", from: "0.0.0")
+        .package(url: "https://github.com/adam-fowler/Ink.git", .branch("markdown-in-html")),
+        .package(url: "https://github.com/JohnSundell/Plot.git", from: "0.0.0"),
+        .package(url: "https://github.com/adam-fowler/reader.git", .branch("master"))
     ],
     targets: [
-        .target(name: "ssg", dependencies: ["Files", "Ink", "Plot"]),
+        .target(name: "ssg", dependencies: ["Files", "Ink", "Plot", "Reader"]),
         .testTarget(name: "ssgTests", dependencies: ["ssg"]),
     ]
 )
