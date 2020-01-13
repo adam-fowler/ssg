@@ -8,10 +8,10 @@ open class Site {
     public typealias Metadata = [String: String]
 
     public struct Configuration {
-        var webSiteName: String
-        var webSiteAddress : String
-        var language: Language
-        var cdn: String?
+        public var webSiteName: String
+        public var webSiteAddress : String
+        public var language: Language
+        public var cdn: String?
         
         public init(webSiteName: String, webSiteAddress : String, language: Language, cdn: String? = nil) {
             self.webSiteName = webSiteName
