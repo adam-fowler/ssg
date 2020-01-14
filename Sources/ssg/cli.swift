@@ -1,8 +1,8 @@
 import Foundation
 
-@discardableResult public func shell(shell: String = "/usr/bin/env", _ args: String...) -> Int32 {
+@discardableResult public func shell(_ args: String...) -> Int32 {
     let task = Process()
-    task.launchPath = shell
+    task.launchPath = "/usr/bin/env"
     task.arguments = args
     task.launch()
     task.waitUntilExit()
