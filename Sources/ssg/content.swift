@@ -119,6 +119,10 @@ public class Content {
             return sourceMarkdown
         }.sorted { $0.lastModified > $1.lastModified }
         
+        // remove posts/pages that are flagged as drafts
+        posts = posts.compactMap { guard $0.markdown.metadata["draft"] == nil else {return nil}; return $0 }
+        pages = pages.compactMap { guard $0.markdown.metadata["draft"] == nil else {return nil}; return $0 }
+
         calculateNextPreviousPostIds()
     }
 
