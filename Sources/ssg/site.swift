@@ -8,14 +8,16 @@ open class Site {
     public typealias Metadata = [String: String]
 
     public struct Configuration {
-        public var webSiteName: String
-        public var webSiteAddress : String
+        public var name: String
+        public var url: String
+        public var description: String
         public var language: Language
         public var cdn: String?
         
-        public init(webSiteName: String, webSiteAddress : String, language: Language, cdn: String? = nil) {
-            self.webSiteName = webSiteName
-            self.webSiteAddress = webSiteAddress
+        public init(name: String, url : String, description: String, language: Language, cdn: String? = nil) {
+            self.name = name
+            self.url = url
+            self.description = description
             self.language = language
             self.cdn = cdn
         }
@@ -29,8 +31,8 @@ open class Site {
     public init(configuration: Configuration, src: Folder, dest: Folder) {
         self.config = configuration
         // ensure the website address doesn't end with a "/"
-        if config.webSiteAddress.last == "/" {
-            config.webSiteAddress = String(config.webSiteAddress.dropLast())
+        if config.url.last == "/" {
+            config.url = String(config.url.dropLast())
         }
 
         self.rootFolder = src
@@ -236,21 +238,49 @@ open class Site {
             )
         )
         _ = try htmlFolder.createFile(at: path, contents: Data(html.render().utf8))
-        siteMap.addEntry(url: "\(config.webSiteAddress)/\(path)", lastModified: lastModified, priority: priority)
+        siteMap.addEntry(url: "\(config.url)/\(path)", lastModified: lastModified, priority: priority)
     }
     
     public func outputXMLSitemap() throws {
         try siteMap.output(htmlFolder)
     }
     
+    public func outputRSSFeed() throws {
+        let filename = "feed.xml"
+        let rss = RSS(
+            .title(config.name),
+            .description(config.description),
+            .link(config.url),
+            .language(config.language),
+            .lastBuildDate(Date(), timeZone: content.dateFormatter.timeZone),
+            .pubDate(Date(), timeZone: content.dateFormatter.timeZone),
+            .ttl(Int(1440)),
+            .atomLink("\(config.url)/\(filename)"),
+            .forEach(content.posts[0..<10]) { item in
+                .item(
+                    .unwrap(item.markdown.metadata[Markdown.targetPathKey]) {
+                        .group(
+                            .guid("\(config.url)/\($0)"),
+                            .link("\(config.url)/\($0)")
+                        )
+                    },
+                    .title(item.markdown.metadata["title"] ?? config.url),
+                    .description(item.markdown.brief()),
+                    .pubDate(item.lastModified, timeZone: content.dateFormatter.timeZone),
+                    .content(item.markdown.html)
+                )
+            }
+        )
+        _ = try htmlFolder.createFile(at: filename, contents: Data(rss.render().utf8))
+    }
     /// Return standard head data
     func standardHead(_ metadata: Metadata) -> [Node<HTML.HeadContext>] {
         return [
             .encoding(.utf8),
-            .siteName(config.webSiteName),
-            .title(metadata["title"] != nil ? "\(metadata["title"]!) - \(config.webSiteName)" : config.webSiteName),
+            .siteName(config.url),
+            .title(metadata["title"] != nil ? "\(metadata["title"]!) - \(config.name)" : config.name),
             .unwrap(metadata["description"]) {.description($0)},
-            .unwrap(metadata[Markdown.targetPathKey]) {.url("\(config.webSiteAddress)/\($0)")},
+            .unwrap(metadata[Markdown.targetPathKey]) {.url("\(config.url)/\($0)")},
             .if(metadata["socialmedia_image"] != nil,
                 .unwrap(metadata["socialmedia_image"]) {.socialImageLink($0)},
                 else: .unwrap(metadata["featured_image"]) {.socialImageLink($0)}

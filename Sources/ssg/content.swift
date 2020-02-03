@@ -173,9 +173,9 @@ public class Content {
 
     var markdownProcessors: [(Markdown) -> Markdown] = []
     var parser = MarkdownParser()
+    var dateFormatter: DateFormatter
 
     private var rootFolder: Folder
     private var folderDateFormatter: DateFormatter
-    private var dateFormatter: DateFormatter
     private var currentId: Int = 0
 }
