@@ -2,7 +2,7 @@ import Files
 import Foundation
 import Ink
 import Plot
-import Reader
+import Reading
 
 open class Site {
     public typealias Metadata = [String: String]
@@ -305,10 +305,11 @@ open class Site {
             let reader = Reader(input.html)
             let speechMarks = Set("'\"")
             do {
-                try reader.read("<img src=")
-                try reader.read(speechMarks)
-                let url = reader.read(until: speechMarks)
+                guard try reader.read("<img src=") else { throw Reader.Error.unexpected }
+                guard try reader.read(speechMarks) else { throw Reader.Error.unexpected }
+                let url = try reader.read(until: speechMarks)
                 guard url[url.startIndex] == "/" else { return input.html }
+                try reader.advance()
                 let remains = reader.readUntilTheEnd()
                 return "<img src=\"\(prefix)\(url)\"\(remains)"
             } catch {
