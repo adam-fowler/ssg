@@ -15,7 +15,7 @@
         "repositoryURL": "https://github.com/adam-fowler/Ink.git",
         "state": {
           "branch": "markdown-in-html",
-          "revision": "07e6a7e3f6e142b57b9d467244bbba45f4dc197d",
+          "revision": "0bbf66bd57f6a55c8709781124a10a356751a1a8",
           "version": null
         }
       },
@@ -24,17 +24,17 @@
         "repositoryURL": "https://github.com/JohnSundell/Plot.git",
         "state": {
           "branch": null,
-          "revision": "00bd4d695b20dba3ec7a09997c5817e55feb8893",
-          "version": "0.4.0"
+          "revision": "e81e059e39603a6c01cd157bc8fb6f1ffbfa7cf5",
+          "version": "0.7.0"
         }
       },
       {
-        "package": "Reader",
-        "repositoryURL": "https://github.com/adam-fowler/reader.git",
+        "package": "Reading",
+        "repositoryURL": "https://github.com/adam-fowler/reading.git",
         "state": {
-          "branch": "master",
-          "revision": "42c31222f1a9fa4812f7e4ae0f1c9ed477fb345c",
-          "version": null
+          "branch": null,
+          "revision": "8cc3efcb44a15d80c4fb06768e3a3027a6319d64",
+          "version": "0.2.0"
         }
       }
     ]
