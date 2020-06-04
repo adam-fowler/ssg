@@ -13,10 +13,10 @@ let package = Package(
         .package(url: "https://github.com/JohnSundell/Files.git", from: "4.0.0"),
         .package(url: "https://github.com/adam-fowler/Ink.git", .branch("markdown-in-html")),
         .package(url: "https://github.com/JohnSundell/Plot.git", from: "0.0.0"),
-        .package(url: "https://github.com/adam-fowler/reading.git", from: "0.2.0")
+        .package(url: "https://github.com/adam-fowler/parsing.git", from: "0.2.0")
     ],
     targets: [
-        .target(name: "ssg", dependencies: ["Files", "Ink", "Plot", "Reading"]),
+        .target(name: "ssg", dependencies: ["Files", "Ink", "Plot", "Parsing"]),
         .testTarget(name: "ssgTests", dependencies: ["ssg"]),
     ]
 )

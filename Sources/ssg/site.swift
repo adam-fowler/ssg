@@ -2,7 +2,7 @@ import Files
 import Foundation
 import Ink
 import Plot
-import Reading
+import Parsing
 
 open class Site {
     public typealias Metadata = [String: String]
@@ -302,11 +302,11 @@ open class Site {
 
     func addImageURLPrefix(_ prefix: String) {
         addMarkdownModifier(Modifier(target: .images) { input in
-            let reader = Reader(input.html)
+            var reader = Parser(input.html)
             let speechMarks = Set("'\"")
             do {
-                guard try reader.read("<img src=") else { throw Reader.Error.unexpected }
-                guard try reader.read(speechMarks) else { throw Reader.Error.unexpected }
+                guard try reader.read("<img src=") else { throw Parser<String>.Error.unexpected }
+                guard try reader.read(speechMarks) else { throw Parser<String>.Error.unexpected }
                 let url = try reader.read(until: speechMarks)
                 guard url[url.startIndex] == "/" else { return input.html }
                 try reader.advance()
