@@ -238,6 +238,7 @@ open class Site {
             )
         )
         _ = try htmlFolder.createFile(at: path, contents: Data(html.render().utf8))
+        guard metadata["private"] == nil || metadata["private"] == "false" else { return }
         siteMap.addEntry(url: "\(config.url)/\(path)", lastModified: lastModified, priority: priority)
     }
     
