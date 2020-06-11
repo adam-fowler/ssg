@@ -283,8 +283,8 @@ open class Site {
             .unwrap(metadata["description"]) {.description($0)},
             .unwrap(metadata[Markdown.targetPathKey]) {.url("\(config.url)/\($0)")},
             .if(metadata["socialmedia_image"] != nil,
-                .unwrap(metadata["socialmedia_image"]) {.socialImageLink($0)},
-                else: .unwrap(metadata["featured_image"]) {.socialImageLink($0)}
+                .unwrap(metadata["socialmedia_image"]) {.socialImageLink("\(config.url)\($0)")},
+                else: .unwrap(metadata["featured_image"]) {.socialImageLink("\(config.url)\($0)")}
             )
         ]
     }
