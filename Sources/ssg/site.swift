@@ -12,13 +12,15 @@ open class Site {
         public var url: String
         public var description: String
         public var language: Language
+        public var socialMediaImage: String?
         public var cdn: String?
         
-        public init(name: String, url : String, description: String, language: Language, cdn: String? = nil) {
+        public init(name: String, url : String, description: String, language: Language, socialMediaImage: String? = nil, cdn: String? = nil) {
             self.name = name
             self.url = url
             self.description = description
             self.language = language
+            self.socialMediaImage = socialMediaImage
             self.cdn = cdn
         }
     }
@@ -276,16 +278,17 @@ open class Site {
     }
     /// Return standard head data
     func standardHead(_ metadata: Metadata) -> [Node<HTML.HeadContext>] {
+        let featuredMediaImage = metadata["socialmedia_image"] ?? metadata["featured_image"]
+        let socialMediaImage = featuredMediaImage ?? config.socialMediaImage
         return [
             .encoding(.utf8),
             .siteName(config.url),
             .title(metadata["title"] != nil ? "\(metadata["title"]!) - \(config.name)" : config.name),
             .unwrap(metadata["description"]) {.description($0)},
             .unwrap(metadata[Markdown.targetPathKey]) {.url("\(config.url)/\($0)")},
-            .if(metadata["socialmedia_image"] != nil,
-                .unwrap(metadata["socialmedia_image"]) {.socialImageLink("\(config.url)\($0)")},
-                else: .unwrap(metadata["featured_image"]) {.socialImageLink("\(config.url)\($0)")}
-            )
+            .unwrap(socialMediaImage) {.socialImageLink("\(config.url)\($0)") },
+            .if(featuredMediaImage != nil, .twitterCardType(.summaryLargeImage), else: .twitterCardType(.summary) ),
+            .viewport(.accordingToDevice)
         ]
     }
     
