@@ -285,8 +285,7 @@ open class Site {
             .if(metadata["socialmedia_image"] != nil,
                 .unwrap(metadata["socialmedia_image"]) {.socialImageLink($0)},
                 else: .unwrap(metadata["featured_image"]) {.socialImageLink($0)}
-            ),
-            .twitterCardType(.summaryLargeImage)
+            )
         ]
     }
     
