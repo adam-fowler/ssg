@@ -248,7 +248,9 @@ open class Site {
         try siteMap.output(htmlFolder)
     }
     
-    public func outputRSSFeed() throws {
+    public func outputRSSFeed(posts: [Content.SourceMarkdown]? = nil) throws {
+        let posts = posts ?? content.posts
+        let count = min(posts.count, 10)
         let filename = "feed.xml"
         let rss = RSS(
             .title(config.name),
@@ -259,7 +261,7 @@ open class Site {
             .pubDate(Date(), timeZone: content.dateFormatter.timeZone),
             .ttl(Int(1440)),
             .atomLink("\(config.url)/\(filename)"),
-            .forEach(content.posts[0..<10]) { item in
+            .forEach(content.posts[0..<count]) { item in
                 .item(
                     .unwrap(item.markdown.metadata[Markdown.targetPathKey]) {
                         .group(
