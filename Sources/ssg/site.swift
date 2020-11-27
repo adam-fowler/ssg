@@ -4,6 +4,21 @@ import Ink
 import Plot
 import Parsing
 
+// Metadata tags used by SSG
+// - ignore: don't output HTML for this file
+// - private: file is private don't include in automated list like latest posts
+// - draft: Work in progress page don't output
+// - class: CSS class to add to HTML
+// - type: post or page
+// - lang: language page is in
+// - published_on: date post was published. If this doesnt exist the modified date for the post is used
+// - no_header: Don't display the header for this page
+// - no_footer: Don't display the footer for this page
+// - title: Title of page
+// - description: Description of page
+// - featured_image: Image used as thumbnail for this page, will be used as social media image unless socialmedia_image is set
+// - socialmedia_image: Image used by social media when linking to this page
+
 open class Site {
     public typealias Metadata = [String: String]
 
@@ -184,10 +199,16 @@ open class Site {
     }
     
     public func contents(_ markdown: Markdown) -> Node<HTML.BodyContext> {
+        var classesArray = ["section"]
+        if let type = markdown.metadata["type"] {
+            classesArray.append(type)
+        }
+        if let `class` = markdown.metadata["class"] {
+            classesArray.append(`class`)
+        }
+        let classes = classesArray.joined(separator: " ")
         return .div (
-            .if(markdown.metadata["type"] != nil,
-                .unwrap(markdown.metadata["type"]) {.class("section \($0)")},
-                else: .class("section")),
+            .class(classes),
             .forEach(contentsGenerators) {
                 .group($0(markdown))
             }
