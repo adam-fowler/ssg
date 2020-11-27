@@ -91,6 +91,18 @@ public class Content {
         return pages.first { $0.markdown.metadata[Markdown.idKey] == idString }?.markdown
     }
 
+    public var publicPosts: [Content.SourceMarkdown] {
+        return posts.filter {
+            return $0.markdown.metadata["private"] == nil || $0.markdown.metadata["private"] == "false"
+        }
+    }
+
+    public var publicPages: [Content.SourceMarkdown] {
+        return pages.filter {
+            return $0.markdown.metadata["private"] == nil || $0.markdown.metadata["private"] == "false"
+        }
+    }
+
     /// load markdown for posts and pages
     func load() throws {
         let postsFolder = try rootFolder.subfolder(at: "posts")
@@ -130,6 +142,7 @@ public class Content {
     func loadMarkdown(from folder: Folder, includeSubFolders: Bool) throws -> [SourceMarkdown] {
 
         let pages = try folder.files.map { (file)->SourceMarkdown in
+            print("Loading \(file.name)")
             let contents = try file.readAsString(encodedAs: .utf8)
             var lastModified = file.modificationDate ?? Date(timeIntervalSince1970: 0)
             var markdown = parser.parse(contents)

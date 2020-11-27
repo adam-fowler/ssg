@@ -3,7 +3,7 @@ import Ink
 import Plot
 
 public extension Node where Context: HTML.BodyContext {
-    static func brief(_ sourceMarkdown: Content.SourceMarkdown, dateFormatter: DateFormatter? = nil, nodeToAppend: Node<HTML.BodyContext> = .empty) -> Self {
+    static func brief(_ sourceMarkdown: Content.SourceMarkdown, numCharacters: Int = 512, dateFormatter: DateFormatter? = nil, nodeToAppend: Node<HTML.BodyContext> = .empty) -> Self {
         let markdown = sourceMarkdown.markdown
         return .div (
             .class("brief"),
@@ -37,19 +37,19 @@ public extension Node where Context: HTML.BodyContext {
             },
             .div(
                 .class("brief_body"),
-                .p(.raw(markdown.brief()))
+                .p(.raw(markdown.brief(numCharacters: numCharacters)))
             ),
             nodeToAppend
         )
     }
 
-    static func latest(_ content: Content, numPosts: Int = 5, dateFormatter: DateFormatter? = nil, insert: (Content.SourceMarkdown)->Node<HTML.BodyContext> = { _ in return .empty }) -> Self {
-        let endIndex = min(numPosts, content.posts.count)
-        let postsForPage = content.posts[0..<endIndex]
+    static func latest(_ content: Content, numPosts: Int = 5, numCharacters: Int = 512, dateFormatter: DateFormatter? = nil, insert: (Content.SourceMarkdown)->Node<HTML.BodyContext> = { _ in return .empty }) -> Self {
+        let endIndex = min(numPosts, content.publicPosts.count)
+        let postsForPage = content.publicPosts[0..<endIndex]
         return .div (
             .class("latest"),
             .forEach(postsForPage) {
-                .brief($0, dateFormatter: dateFormatter, nodeToAppend: insert($0))
+                .brief($0, numCharacters: numCharacters, dateFormatter: dateFormatter, nodeToAppend: insert($0))
             }
         )
     }
