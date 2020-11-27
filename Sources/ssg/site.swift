@@ -173,6 +173,7 @@ open class Site {
     /// output HTML files for all the website pages
     public func outputPagesHTML(priority: Double = 1.0) throws {
         for page in content.pages {
+            if page.markdown.metadata["ignore"] == "true" { continue }
             try outputHTML(markdown: page.markdown, path: page.targetPath, lastModified: page.file.modificationDate ?? page.lastModified, priority: priority)
         }
     }
@@ -194,7 +195,13 @@ open class Site {
     }
     
     /// output HTML file given a title, contents and path to save to
-    public func outputHTML(contents: Node<HTML.BodyContext>, metadata: Metadata, path: String, lastModified: Date = Date(), priority: Double = 0.5) throws {
+    public func outputHTML(
+        contents: Node<HTML.BodyContext>,
+        metadata: Metadata,
+        path: String,
+        lastModified: Date = Date(),
+        priority: Double = 0.5
+    ) throws {
         var metadata = metadata
         // if target path isn't set in the metadata set it now
         if metadata[Markdown.targetPathKey] == nil {
