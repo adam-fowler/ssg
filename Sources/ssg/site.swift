@@ -18,6 +18,7 @@ import Parsing
 // - description: Description of page
 // - featured_image: Image used as thumbnail for this page, will be used as social media image unless socialmedia_image is set
 // - socialmedia_image: Image used by social media when linking to this page
+// - sitemap_priority: Priority assigned to page/post in sitemap
 
 open class Site {
     public typealias Metadata = [String: String]
@@ -268,7 +269,8 @@ open class Site {
             )
         )
         _ = try htmlFolder.createFile(at: path, contents: Data(html.render().utf8))
-        guard metadata["private"] == nil || metadata["private"] == "false" else { return }
+        let priority = (metadata["sitemap_priority"].map { Double($0) ?? priority }) ?? priority
+        guard metadata["private"] != "true", priority > 0.0 else { return }
         siteMap.addEntry(url: "\(config.url)/\(path)", lastModified: lastModified, priority: priority)
     }
     
