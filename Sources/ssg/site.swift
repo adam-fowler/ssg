@@ -20,6 +20,23 @@ import Parsing
 // - socialmedia_image: Image used by social media when linking to this page
 // - sitemap_priority: Priority assigned to page/post in sitemap
 
+public protocol SSGConfiguration {
+    var name: String { get }
+    var url: String { get set }
+    var description: String { get }
+    var language: Language { get }
+    var socialMediaImage: String? { get }
+    var cdn: String? { get }
+    func constructTitle(_: String) -> String
+}
+
+public extension SSGConfiguration {
+    var cdn: String? { return nil }
+    func constructTitle(_ title: String) -> String {
+        return "\(title) - \(self.name)"
+    }
+}
+
 open class Site {
     public typealias Metadata = [String: String]
 
@@ -30,8 +47,15 @@ open class Site {
         public var language: Language
         public var socialMediaImage: String?
         public var cdn: String?
-        
-        public init(name: String, url : String, description: String, language: Language, socialMediaImage: String? = nil, cdn: String? = nil) {
+
+        public init(
+            name: String,
+            url : String,
+            description: String,
+            language: Language,
+            socialMediaImage: String? = nil,
+            cdn: String? = nil
+        ) {
             self.name = name
             self.url = url
             self.description = description
@@ -41,12 +65,12 @@ open class Site {
         }
     }
 
-    public var config: Configuration
+    public var config: SSGConfiguration
     public var rootFolder: Folder
     public var htmlFolder: Folder
     public var content: Content
     
-    public init(configuration: Configuration, src: Folder, dest: Folder) {
+    public init(configuration: SSGConfiguration, src: Folder, dest: Folder) {
         self.config = configuration
         // ensure the website address doesn't end with a "/"
         if config.url.last == "/" {
@@ -315,7 +339,7 @@ open class Site {
         return [
             .encoding(.utf8),
             .siteName(config.url),
-            .title(metadata["title"] != nil ? "\(metadata["title"]!) - \(config.name)" : config.name),
+            .title(metadata["title"] != nil ? config.constructTitle(metadata["title"]!) : config.name),
             .unwrap(metadata["description"]) {.description($0)},
             .unwrap(metadata[Markdown.targetPathKey]) {.url("\(config.url)/\($0)")},
             .unwrap(socialMediaImage) {.socialImageLink("\(config.url)\($0)") },
