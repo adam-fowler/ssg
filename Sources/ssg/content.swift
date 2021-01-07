@@ -42,6 +42,10 @@ public extension Markdown {
         get { return get(key: Self.nextPostKey) }
         set(value) { set(key: Self.nextPostKey, value: value) }
     }
+
+    var isPrivate: Bool {
+        metadata["private"]  == "true"
+    }
 }
 
 public class Content {
@@ -93,13 +97,13 @@ public class Content {
 
     public var publicPosts: [Content.SourceMarkdown] {
         return posts.filter {
-            return $0.markdown.metadata["private"] == nil || $0.markdown.metadata["private"] == "false"
+            return !$0.markdown.isPrivate
         }
     }
 
     public var publicPages: [Content.SourceMarkdown] {
         return pages.filter {
-            return $0.markdown.metadata["private"] == nil || $0.markdown.metadata["private"] == "false"
+            return !$0.markdown.isPrivate
         }
     }
 
@@ -174,13 +178,19 @@ public class Content {
     /// calculate next/previous post ids
     func calculateNextPreviousPostIds() {
         guard posts.count > 0 else {return}
-        var prevPost: Int? = nil
-        for i in 0..<posts.count-1 {
-            posts[i].markdown.nextPost = prevPost
-            posts[i].markdown.prevPost = posts[i+1].markdown.id
-            prevPost = posts[i].markdown.id
+        var nextPost: Int? = nil
+        var nextPostIndex: Int? = nil
+        for i in 0..<posts.count {
+            // don't include private posts
+            if !posts[i].markdown.isPrivate {
+                if let nextPostIndex = nextPostIndex {
+                    posts[nextPostIndex].markdown.prevPost = posts[i].markdown.id
+                }
+                posts[i].markdown.nextPost = nextPost
+                nextPostIndex = i
+                nextPost = posts[i].markdown.id
+            }
         }
-        posts[posts.count-1].markdown.nextPost = prevPost
     }
     
 
