@@ -44,7 +44,7 @@ public extension Markdown {
     }
 
     var isPrivate: Bool {
-        metadata["private"]  == "true"
+        metadata["private"]  == "true" || metadata["ignore"]  == "true"
     }
 }
 
