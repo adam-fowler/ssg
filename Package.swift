@@ -11,7 +11,7 @@ let package = Package(
     ],
     dependencies: [
         .package(url: "https://github.com/JohnSundell/Files.git", from: "4.0.0"),
-        .package(url: "https://github.com/adam-fowler/Ink.git", .branch("working")),
+        .package(url: "https://github.com/adam-fowler/Ink.git", from: "0.2.1"),
         .package(url: "https://github.com/JohnSundell/Plot.git", from: "0.8.0"),
         .package(url: "https://github.com/adam-fowler/parsing.git", from: "0.2.0")
     ],
