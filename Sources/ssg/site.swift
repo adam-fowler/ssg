@@ -206,6 +206,7 @@ open class Site {
     /// output HTML files for all the website posts
     public func outputPostsHTML(priority: Double = 0.25) throws {
         for post in content.posts {
+            if post.markdown.metadata["ignore"] == "true" { continue }
             try outputHTML(markdown: post.markdown, path: post.targetPath, lastModified: post.file.modificationDate ?? post.lastModified, priority: priority)
         }
     }

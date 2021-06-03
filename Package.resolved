@@ -14,9 +14,9 @@
         "package": "Ink",
         "repositoryURL": "https://github.com/adam-fowler/Ink.git",
         "state": {
-          "branch": "working",
-          "revision": "6333a40372abb3789eeac2e8951fed013fd8ad49",
-          "version": null
+          "branch": null,
+          "revision": "8b36d2d9ac149a59b9acc6a0641750d2a10ac14e",
+          "version": "0.2.2"
         }
       },
       {
