@@ -110,12 +110,12 @@ public class Content {
     /// load markdown for posts and pages
     func load() throws {
         let postsFolder = try rootFolder.subfolder(at: "posts")
-        self.posts = try loadMarkdown(from: postsFolder, includeSubFolders: false).map {
+        self.posts = try loadMarkdown(from: postsFolder, includeSubFolders: true).map {
             var sourceMarkdown = $0
             sourceMarkdown.markdown.metadata["type"] = "post"
             // work out target path
             let folder = folderDateFormatter.string(from: $0.lastModified)
-            sourceMarkdown.targetPath = "\(folder)/\($0.file.path(relativeTo: postsFolder).split(separator: ".").dropLast().joined()).html"
+            sourceMarkdown.targetPath = "\(folder)/\($0.file.nameExcludingExtension).html"
             sourceMarkdown.markdown.targetPath = sourceMarkdown.targetPath
             for processor in markdownProcessors {
                 sourceMarkdown.markdown = processor(sourceMarkdown.markdown)
