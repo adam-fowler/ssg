@@ -109,32 +109,32 @@ public class Content {
 
     /// load markdown for posts and pages
     func load() throws {
-        let postsFolder = try rootFolder.subfolder(at: "posts")
-        self.posts = try loadMarkdown(from: postsFolder, includeSubFolders: true).map {
-            var sourceMarkdown = $0
-            sourceMarkdown.markdown.metadata["type"] = "post"
-            // work out target path
-            let folder = folderDateFormatter.string(from: $0.lastModified)
-            sourceMarkdown.targetPath = "\(folder)/\($0.file.nameExcludingExtension).html"
-            sourceMarkdown.markdown.targetPath = sourceMarkdown.targetPath
-            for processor in markdownProcessors {
-                sourceMarkdown.markdown = processor(sourceMarkdown.markdown)
-            }
-            return sourceMarkdown
-        }.sorted { $0.lastModified > $1.lastModified }
-
-        let pagesFolder = try rootFolder.subfolder(at: "pages")
-        self.pages = try loadMarkdown(from: pagesFolder, includeSubFolders: true).map {
-            var sourceMarkdown = $0
-            sourceMarkdown.markdown.metadata["type"] = "page"
-            sourceMarkdown.targetPath = $0.file.path(relativeTo: pagesFolder).split(separator: ".").dropLast().joined() + ".html"
-            sourceMarkdown.markdown.targetPath = sourceMarkdown.targetPath
-            for processor in markdownProcessors {
-                sourceMarkdown.markdown = processor(sourceMarkdown.markdown)
-            }
-            return sourceMarkdown
-        }.sorted { $0.lastModified > $1.lastModified }
-        
+        if let postsFolder = try? rootFolder.subfolder(at: "posts") {
+            self.posts = try loadMarkdown(from: postsFolder, includeSubFolders: true).map {
+                var sourceMarkdown = $0
+                sourceMarkdown.markdown.metadata["type"] = "post"
+                // work out target path
+                let folder = folderDateFormatter.string(from: $0.lastModified)
+                sourceMarkdown.targetPath = "\(folder)/\($0.file.nameExcludingExtension).html"
+                sourceMarkdown.markdown.targetPath = sourceMarkdown.targetPath
+                for processor in markdownProcessors {
+                    sourceMarkdown.markdown = processor(sourceMarkdown.markdown)
+                }
+                return sourceMarkdown
+            }.sorted { $0.lastModified > $1.lastModified }
+        }
+        if let pagesFolder = try? rootFolder.subfolder(at: "pages") {
+            self.pages = try loadMarkdown(from: pagesFolder, includeSubFolders: true).map {
+                var sourceMarkdown = $0
+                sourceMarkdown.markdown.metadata["type"] = "page"
+                sourceMarkdown.targetPath = $0.file.path(relativeTo: pagesFolder).split(separator: ".").dropLast().joined() + ".html"
+                sourceMarkdown.markdown.targetPath = sourceMarkdown.targetPath
+                for processor in markdownProcessors {
+                    sourceMarkdown.markdown = processor(sourceMarkdown.markdown)
+                }
+                return sourceMarkdown
+            }.sorted { $0.lastModified > $1.lastModified }
+        }        
         // remove posts/pages that are flagged as drafts
         posts = posts.compactMap { guard $0.markdown.metadata["draft"] == nil else {return nil}; return $0 }
         pages = pages.compactMap { guard $0.markdown.metadata["draft"] == nil else {return nil}; return $0 }
