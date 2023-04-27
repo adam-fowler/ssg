@@ -3,7 +3,7 @@ import Ink
 import Plot
 
 public extension Node where Context: HTML.BodyContext {
-    static func brief(_ sourceMarkdown: Content.SourceMarkdown, numCharacters: Int = 512, dateFormatter: DateFormatter? = nil, nodeToAppend: Node<HTML.BodyContext> = .empty) -> Self {
+    static func brief(_ sourceMarkdown: Content.SourceMarkdown, numCharacters: Int = 512, dateFormatter: DateFormatter? = nil, nodeToAppend: Node<Context> = .empty) -> Self {
         let markdown = sourceMarkdown.markdown
         return .div (
             .class("brief"),
@@ -43,7 +43,7 @@ public extension Node where Context: HTML.BodyContext {
         )
     }
 
-    static func latest(_ content: Content, numPosts: Int = 5, numCharacters: Int = 512, dateFormatter: DateFormatter? = nil, insert: (Content.SourceMarkdown)->Node<HTML.BodyContext> = { _ in return .empty }) -> Self {
+    static func latest(_ content: Content, numPosts: Int = 5, numCharacters: Int = 512, dateFormatter: DateFormatter? = nil, insert: (Content.SourceMarkdown)->Node<Context> = { _ in return .empty }) -> Self {
         let endIndex = min(numPosts, content.publicPosts.count)
         let postsForPage = content.publicPosts[0..<endIndex]
         return .div (
